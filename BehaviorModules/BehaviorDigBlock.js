@@ -1,3 +1,5 @@
+const { Movements } = require('mineflayer-pathfinder')
+const { GoalFollow } = require('mineflayer-pathfinder').goals
 const botWebsocket = require('@modules/botWebsocket')
 module.exports = class template {
   constructor (bot, targets) {
@@ -6,6 +8,11 @@ module.exports = class template {
     this.stateName = 'BehaviorDigBlock'
 
     this.isEndFinished = false
+
+    const mcData = require('minecraft-data')(this.bot.version)
+    this.movements = new Movements(bot, mcData)
+    this.positionToDig = null
+    this.positionToDigRange = 3
   }
 
   isFinished () {
@@ -13,8 +20,23 @@ module.exports = class template {
   }
 
   onStateEntered () {
+    if (this.positionToDig) {
+      this.bot.pathfinder.setMovements(this.movements)
+      const p = {
+        position: this.positionToDig.clone()
+      }
+      this.bot.pathfinder.setGoal(new GoalFollow(p, this.positionToDigRange))
+    }
+
     this.isEndFinished = false
     this.checkBlock()
+  }
+
+  onStateExited () {
+    if (this.positionToDig) {
+      this.bot.pathfinder.setGoal(null)
+      this.positionToDig = null
+    }
   }
 
   checkBlock () {

@@ -207,6 +207,10 @@ function miningFunction (bot, targets) {
       child: digBlock,
       onTransition: () => {
         targets.position = targets.minerJob.mineBlock
+        digBlock.positionToDig = targets.minerJob.mineBlock.clone()
+        if (targets.minerJob.nextLayer.minerCords.tunel) {
+          digBlock.positionToDig.y = parseInt(targets.minerJob.nextLayer.minerCords.yStart)
+        }
       },
       shouldTransition: () => {
         const block = bot.blockAt(targets.minerJob.mineBlock)
